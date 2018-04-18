@@ -5,7 +5,7 @@ use gl;
 use glfw::{self, Glfw, Context, Key, Action, Window as GlfwWindow, WindowEvent};
 
 use lang::ObjectPar;
-use engine::input::{MouseEvent, KeyEvent, InputEvent, InputControl};
+use engine::input::{MouseEvent, MouseButtonEvent, KeyEvent, InputEvent, InputControl};
 use engine::timing::Timing;
 
 type Events = Receiver<(f64, WindowEvent)>;
@@ -121,20 +121,30 @@ impl Window {
                         x_offset,
                         y_offset,
                         is_scroll: false,
+                        button_event: None,
                     });
                 },
                 WindowEvent::Scroll(x_offset, y_offset) => {
-                    let (x_pos, y_pos) = if let Some(last_pos) = self.last_mouse_pos {
-                        last_pos
-                    } else {
-                        (0.0, 0.0)
-                    };
+                    let (x_pos, y_pos) = self.last_mouse_pos.unwrap_or((0.0, 0.0));
                     self.mouse_event(MouseEvent {
                         x_pos,
                         y_pos,
                         x_offset: x_offset as f32,
                         y_offset: y_offset as f32,
                         is_scroll: true,
+                        button_event: None,
+                    });
+                },
+                // This is not work (why?), use GlfwWindow::get_mouse_button in process_input instead
+                WindowEvent::MouseButton(button, action, modifiers) => {
+                    let (x_pos, y_pos) = self.last_mouse_pos.unwrap_or((0.0, 0.0));
+                    self.mouse_event(MouseEvent {
+                        x_pos,
+                        y_pos,
+                        x_offset: 0.0,
+                        y_offset: 0.0,
+                        is_scroll: false,
+                        button_event: Some(MouseButtonEvent(button, action, modifiers)),
                     });
                 },
                 WindowEvent::Key(key, code, action, modifiers) => {

@@ -1,6 +1,6 @@
 use cgmath::prelude::*;
 use cgmath::{Deg, perspective};
-use glfw::{Action, Key, Window};
+use glfw::{Action, Key, MouseButtonLeft, Window};
 use lang::{Point3, Vector3, Matrix4, Direction};
 use super::input::{InputControl, KeyEvent, MouseEvent};
 
@@ -20,6 +20,7 @@ pub struct Camera {
     pub constrain_pitch: bool,
 
     // Camera options
+    pub rotate_enabled: bool,
     pub movement_speed: f32,
     pub mouse_sensitivity: f32,
     pub zoom: f32,
@@ -38,6 +39,7 @@ impl Default for Camera {
             yaw: -90.0,
             pitch: 0.0,
             constrain_pitch: true,
+            rotate_enabled: false,
             movement_speed: 2.5,
             mouse_sensitivity: 0.1,
             zoom: 45.0,
@@ -107,24 +109,26 @@ impl InputControl for Camera {
         } else {
             // Mouse cursor pos event
 
-            let x_offset = mouse.x_offset * self.mouse_sensitivity;
-            let y_offset = mouse.y_offset * self.mouse_sensitivity;
+            if self.rotate_enabled {
+                let x_offset = mouse.x_offset * self.mouse_sensitivity;
+                let y_offset = mouse.y_offset * self.mouse_sensitivity;
 
-            self.yaw += x_offset;
-            self.pitch += y_offset;
+                self.yaw += x_offset;
+                self.pitch += y_offset;
 
-            // Make sure that when pitch is out of bounds, screen doesn't get flipped
-            if self.constrain_pitch {
-                if self.pitch > 89.0 {
-                    self.pitch = 89.0;
+                // Make sure that when pitch is out of bounds, screen doesn't get flipped
+                if self.constrain_pitch {
+                    if self.pitch > 89.0 {
+                        self.pitch = 89.0;
+                    }
+                    if self.pitch < -89.0 {
+                        self.pitch = -89.0;
+                    }
                 }
-                if self.pitch < -89.0 {
-                    self.pitch = -89.0;
-                }
+
+                // Update Front, Right and Up Vectors using the updated Eular angles
+                self.update_vectors();
             }
-
-            // Update Front, Right and Up Vectors using the updated Eular angles
-            self.update_vectors();
         }
     }
 
@@ -132,6 +136,16 @@ impl InputControl for Camera {
     }
 
     fn on_input(&mut self, window: &Window, delta_time: f32) {
+        match window.get_mouse_button(MouseButtonLeft) {
+            Action::Press if !self.rotate_enabled => {
+                self.rotate_enabled = true
+            },
+            Action::Release if self.rotate_enabled => {
+                self.rotate_enabled = false
+            },
+            _ => {}
+        }
+
         if window.get_key(Key::W) == Action::Press {
             self.movement(Direction::FORWARD, delta_time);
         }

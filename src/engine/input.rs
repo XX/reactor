@@ -1,7 +1,10 @@
-use glfw::{Key, Scancode, Action, Modifiers, Window};
+use glfw::{Key, MouseButton, Scancode, Action, Modifiers, Window};
 
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct KeyEvent(pub Key, pub Scancode, pub Action, pub Modifiers);
+
+#[derive(Clone, PartialEq, PartialOrd, Debug)]
+pub struct MouseButtonEvent(pub MouseButton, pub Action, pub Modifiers);
 
 #[derive(Clone, PartialEq, PartialOrd, Debug)]
 pub struct MouseEvent {
@@ -10,6 +13,7 @@ pub struct MouseEvent {
     pub x_offset: f32,
     pub y_offset: f32,
     pub is_scroll: bool,
+    pub button_event: Option<MouseButtonEvent>
 }
 
 pub trait InputEvent {
