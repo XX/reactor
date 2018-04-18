@@ -91,6 +91,10 @@ impl Shader {
         gl::Uniform3f(gl::GetUniformLocation(self.ID, name.as_ptr()), x, y, z);
     }
     /// ------------------------------------------------------------------------
+    pub unsafe fn setVec4(&self, name: &CStr, x: f32, y: f32, z: f32, w: f32) {
+        gl::Uniform4f(gl::GetUniformLocation(self.ID, name.as_ptr()), x, y, z, w);
+    }
+    /// ------------------------------------------------------------------------
     pub unsafe fn setMat4(&self, name: &CStr, mat: &Matrix4<f32>) {
         gl::UniformMatrix4fv(gl::GetUniformLocation(self.ID, name.as_ptr()), 1, gl::FALSE, mat.as_ptr());
     }
